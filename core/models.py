@@ -1,7 +1,10 @@
 from datetime import datetime
 from hashlib import md5
+from uuid import uuid4
 
 import peewee
+from playhouse.signals import post_save
+
 from settings import database
 
 
@@ -13,7 +16,7 @@ class BaseModel(peewee.Model):
 class User(BaseModel):
     username = peewee.CharField(unique=True)
     password = peewee.CharField()
-    join_date = peewee.DateTimeField(default=datetime.now, null=None)
+    join_date = peewee.DateTimeField(default=datetime.now, null=True)
 
     def check_password(self, password: str):
         pw_hash = md5(password.encode('utf-8')).hexdigest()
@@ -22,7 +25,11 @@ class User(BaseModel):
     @classmethod
     def create(cls, **query):
         query['join_date'] = datetime.now()
-        return super().create(**query)
+        instance = super().create(**query)
+        AuthToken.create(
+            user=instance
+        )
+        return instance
 
 
 class Post(BaseModel):
@@ -30,4 +37,16 @@ class Post(BaseModel):
     title = peewee.CharField(max_length=255)
     content = peewee.CharField(max_length=1023)
 
+
+class AuthToken(BaseModel):
+    user = peewee.ForeignKeyField(User, backref='auth_token', unique=True)
+    token = peewee.CharField(max_length=255, )
+
+    @classmethod
+    def create(cls, **query):
+        token = uuid4().hex
+        while cls.select().where(cls.token == token).exists():
+            token = uuid4().hex
+        query['token'] = token
+        return super().create(**query)
 

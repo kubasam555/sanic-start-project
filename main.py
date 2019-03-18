@@ -1,11 +1,14 @@
 import os
 
+from playhouse.signals import post_save
 from sanic.exceptions import abort
 from sanic.log import logger
 from sanic.response import json, stream, text
 from sanic.response import redirect
 
+from core.models import AuthToken
 from core.models import User
+from core.utils import auth_user
 from settings import app
 from apps.auth.main import auth_bp
 from apps.post.main import post_bp
@@ -31,6 +34,18 @@ async def middleware_session_response(request, response):
 
 
 @app.middleware('request')
+async def middleware_token_auth(request):
+    try:
+        token_key, token = request.headers.get('Authorization').split()
+        if not token_key == 'Token':
+            return
+        user = AuthToken.get(AuthToken.token == token).user
+        auth_user(request, user)
+    except (AttributeError, ValueError, AuthToken.DoesNotExist):
+        pass
+
+
+@app.middleware('request')
 async def authenticate_middleware(request):
     session_user = request['session'].get('user')
     if session_user:
@@ -41,8 +56,6 @@ async def authenticate_middleware(request):
         else:
             request['user'] = user
     # return request
-
-
 
 
 @app.route("/")
@@ -98,7 +111,7 @@ async def static_file(request):
 async def no_no(request):
         abort(401, {'error': 'Unauthorized'})
 
-# create_tables()
+create_tables()
 
 if __name__ == "__main__":
     # app.run(host="0.0.0.0", port=8000, debug=False)

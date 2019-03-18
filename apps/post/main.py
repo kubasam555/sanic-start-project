@@ -22,7 +22,7 @@ class PostListView(HTTPMethodView):
 
     @class_login_required
     async def post(self, request):
-        data = request.json
+        data = request.json or {}
         data['user_id'] = request['user'].id
         instance = self.model.create(
             **data
