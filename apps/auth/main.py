@@ -20,7 +20,12 @@ async def login(request):
         if not user.exists() or not user[0].check_password(password):
             return json({'error': 'Authentication failed'})
 
-        auth_user(request, user[0])
+        user = user[0]
+        auth_user(request, user)
+        data = {
+            'token': user.auth_token.get().token
+        }
+        return json(data)
     return redirect(request.app.url_for('root'))
 
 
@@ -34,10 +39,14 @@ async def register(request):
         if user.exists():
             return json({'error': 'Username exists in database'})
 
-        User.create(
+        instance = User.create(
             username=username,
             password=md5(password.encode('utf-8')).hexdigest()
         )
+        data = {
+            'token': instance.auth_token.get().token
+        }
+        return json(data)
     return redirect(request.app.url_for('auth_app.login'))
 
 
