@@ -1,16 +1,9 @@
 import os
-from asyncio import sleep
 
-from peewee import PostgresqlDatabase
-from sanic import Sanic
-from sanic.exceptions import NotFound
 from sanic.exceptions import abort
 from sanic.log import logger
-from sanic.response import file
 from sanic.response import json, stream, text
 from sanic.response import redirect
-from sanic_session import InMemorySessionInterface
-from sanic_session import Session
 
 from core.models import User
 from settings import app
@@ -19,10 +12,12 @@ from apps.post.main import post_bp
 from create_tables import create_tables
 
 
-
 app.blueprint(auth_bp)
 app.blueprint(post_bp)
 app.static('/static', './static')
+
+DEBUG = os.environ.get('DEBUG') == 'True'
+WORKERS = int(os.environ.get('WORKERS', 1))
 
 
 @app.middleware('request')
@@ -48,12 +43,6 @@ async def authenticate_middleware(request):
     # return request
 
 
-# @app.exception(NotFound)
-# async def error_404s(request, exception):
-#     if request.path == '/favicon.ico':
-#         raise exception
-#     url = app.url_for('test')
-#     return redirect(url)
 
 
 @app.route("/")
@@ -88,11 +77,6 @@ async def param_test(request, param):
     return json({'param': param, 'type': type(param)})
 
 
-# @app.route('/post', methods=['POST'])
-# async def post_handler(request):
-#     return json(request.json)
-
-
 @app.route('/get', methods=['GET'], host='0.0.0.0:8000')
 async def get_handler(request):
     return text('GET request from 0.0.0.0 - {}'.format(request.args))
@@ -114,6 +98,8 @@ async def static_file(request):
 async def no_no(request):
         abort(401, {'error': 'Unauthorized'})
 
+create_tables()
+
 if __name__ == "__main__":
-    create_tables()
-    app.run(host="0.0.0.0", port=8000, debug=True, auto_reload=False)
+    # app.run(host="0.0.0.0", port=8000, debug=False)
+    app.run(host="0.0.0.0", port=8000, debug=DEBUG, workers=WORKERS)

@@ -5,6 +5,7 @@ from sanic import Sanic
 from sanic_session import InMemorySessionInterface
 from sanic_session import Session
 
+
 app = Sanic()
 session = Session(app, interface=InMemorySessionInterface())
 

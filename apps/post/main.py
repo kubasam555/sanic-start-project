@@ -17,7 +17,7 @@ class PostListView(HTTPMethodView):
         queryset = self.model.select()
         result = []
         for item in queryset:
-            result.append(model_to_dict(item))
+            result.append(model_to_dict(item, exclude=[self.model.user.password]))
         return json(result)
 
     @class_login_required
