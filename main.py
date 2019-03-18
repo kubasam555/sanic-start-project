@@ -98,7 +98,7 @@ async def static_file(request):
 async def no_no(request):
         abort(401, {'error': 'Unauthorized'})
 
-create_tables()
+# create_tables()
 
 if __name__ == "__main__":
     # app.run(host="0.0.0.0", port=8000, debug=False)
