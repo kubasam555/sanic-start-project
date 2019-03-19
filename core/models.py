@@ -3,7 +3,6 @@ from hashlib import md5
 from uuid import uuid4
 
 import peewee
-from playhouse.signals import post_save
 
 from settings import database
 

@@ -1,6 +1,5 @@
 import os
 
-from playhouse.signals import post_save
 from sanic.exceptions import abort
 from sanic.log import logger
 from sanic.response import json, stream, text
@@ -25,12 +24,14 @@ WORKERS = int(os.environ.get('WORKERS', 1))
 
 @app.middleware('request')
 async def middleware_session_request(request):
-    logger.info(f'Middleware request: {str(request.get("session"))}')
+    if DEBUG:
+        logger.info(f'Middleware request: {str(request.get("session"))}')
 
 
 @app.middleware('response')
 async def middleware_session_response(request, response):
-    logger.info(f'Middleware response: {str(request.get("session"))}')
+    if DEBUG:
+        logger.info(f'Middleware response: {str(request.get("session"))}')
 
 
 @app.middleware('request')
