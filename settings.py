@@ -7,6 +7,7 @@ from sanic_session import Session
 
 
 app = Sanic()
+app.config.ACCESS_LOG = False
 session = Session(app, interface=InMemorySessionInterface())
 
 database = PostgresqlDatabase(
