@@ -11,6 +11,7 @@ def auth_user(request, user: User):
         'is_authenticated': True
     }
     request['session']['user'] = user_dict
+    request['user'] = user
 
 
 def logout_user(request):
