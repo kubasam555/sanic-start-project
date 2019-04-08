@@ -27,7 +27,7 @@ class PostListView(HTTPMethodView):
         instance = self.model.create(
             **data
         )
-        return json(model_to_dict(instance))
+        return json(model_to_dict(instance, exclude=[self.model.user.password]))
 
 
 class PostDetailView(HTTPMethodView):
@@ -49,7 +49,7 @@ class PostDetailView(HTTPMethodView):
         instance = self.get_object(id)
         update_model_from_dict(instance, request.json, ignore_unknown=True)
         instance.save()
-        return json(model_to_dict(instance))
+        return json(model_to_dict(instance, exclude=[self.model.user.password]))
 
 
 post_bp.add_route(PostListView.as_view(), '/')
